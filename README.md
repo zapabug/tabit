@@ -25,41 +25,14 @@ Tip Tab is a web-based solution designed to optimize restaurant service by allow
 ### 5. Optional Social Media Integration
 - If Lightning is used for payment, an optional **Nostr social post** can be triggered (anonymous unless the customer opts in).
 
-## Tech Stack
-### Frontend
-- **React.js** – For a responsive and mobile-friendly UI
-- **TailwindCSS** – For clean and efficient styling
-- **QR/NFC Web API** – To handle customer interactions
-
-### Backend
-- **Node.js + Express.js** – API server for managing orders and notifications
-- **Firebase Firestore** – Real-time session tracking
-- **WebSockets** – Live notifications for staff
-
-### Payments
-- **BTCPay Server / LNbits** – For Lightning payments
-- **Standard POS Workflow** – Works alongside existing restaurant POS systems
-
-## Installation & Setup
-1. **Clone the repository:**
-   ```sh
-   git clone https://github.com/your-username/tip-tab.git
-   cd tip-tab
-   ```
-2. **Install dependencies:**
-   ```sh
-   npm install
-   ```
-3. **Setup Firebase & Environment Variables:**
-   - Create a Firebase project and Firestore database.
-   - Set up a `.env` file with API keys.
-4. **Run the development server:**
-   ```sh
-   npm start
-   ```
+set up LNBits instance
+enable lnbits plugins:
+    zapsplits (auto tips)
+    Cashu extension (for staff wallets)
+Configure webhooks auto spend zaps to satff npubs
 
 ## Roadmap
-- [ ] Implement QR/NFC scanning
+- [✔️] Implement QR/NFC scanning 
 - [ ] Develop a basic ordering system
 - [ ] Integrate WebSockets for live notifications
 - [ ] Implement Lightning payment processing
@@ -69,5 +42,4 @@ Tip Tab is a web-based solution designed to optimize restaurant service by allow
 We welcome contributions! Feel free to open issues or submit pull requests.
 
 ## License
-MIT License
-
+Tab-IT
