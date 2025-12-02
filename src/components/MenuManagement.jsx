@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import nostrService from '../services/nostrService';
+import CreateManageTables from './CreateManageTables';
+import TableQRGenerator from './TableQRGenerator';
 
 export default function MenuManagement() {
   const [restaurantKey, setRestaurantKey] = useState('');
@@ -241,6 +243,16 @@ VITE_ZAPSPLITS_ENABLED=true`}
         </div>
       </div>
 
+      {/* Create/Manage Tables */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Create / Manage Tables</h2>
+        <p className="text-sm text-gray-600 mb-6">
+          Create tables, manage their details, and generate QR codes. Each table needs a unique identifier and QR code for customer access.
+        </p>
+
+        <CreateManageTables />
+      </div>
+
       {/* QR Code Generation */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-xl font-bold text-gray-900 mb-4">Table QR Codes</h2>
@@ -248,15 +260,7 @@ VITE_ZAPSPLITS_ENABLED=true`}
           Generate QR codes for each table in your restaurant. Each table gets a unique QR code.
         </p>
 
-        <div className="bg-indigo-50 rounded-lg p-4">
-          <h3 className="font-semibold text-indigo-900 mb-2">📱 How to Use</h3>
-          <ol className="text-sm text-indigo-800 space-y-2 list-decimal list-inside">
-            <li>Switch to the "Tables" tab in this dashboard</li>
-            <li>Use the QR Generator option for each table</li>
-            <li>Print the QR codes and place them on tables</li>
-            <li>Test by scanning with your phone camera</li>
-          </ol>
-        </div>
+        <TableQRGenerator />
       </div>
     </div>
   );
