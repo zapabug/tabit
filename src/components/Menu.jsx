@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTableSession } from '../context/TableSessionContext';
 import PaymentModal from './PaymentModal';
+import Navigation from './Navigation';
 
 const TRANSLATIONS = {
   en: {
@@ -191,10 +192,10 @@ const MENU_ITEMS = [
 ];
 
 export default function Menu() {
-  const { 
-    addOrder, 
-    paymentStatus, 
-    handleInteraction, 
+  const {
+    addOrder,
+    paymentStatus,
+    handleInteraction,
     needsAssistance,
     assistanceReason,
     toggleAssistance,
@@ -260,23 +261,23 @@ export default function Menu() {
 
   const handlePayment = useCallback(async (paymentMethod) => {
     console.log('Payment initiated:', paymentMethod);
-    
+
     if (!selectedItems || !selectedItems.length) {
       console.error('No items selected');
       return;
     }
 
     handleInteraction();
-    
+
     try {
       console.log('Processing payment with items:', selectedItems);
       let success = false;
-      
+
       if (paymentMethod === 'lightning') {
         console.log('Starting Lightning payment...');
         success = await addOrder(selectedItems, 'lightning');
         console.log('Lightning payment result:', success);
-        
+
         if (success) {
           console.log('Lightning payment successful, clearing items');
           clearSelectedItems();
@@ -286,13 +287,13 @@ export default function Menu() {
         console.log('Starting Pay Later...');
         success = await addOrder(selectedItems, 'later');
         console.log('Pay Later result:', success);
-        
+
         if (success) {
           console.log('Pay Later successful, keeping items');
           setShowPaymentModal(false);
         }
       }
-      
+
       if (!success) {
         console.error('Payment failed for method:', paymentMethod);
       }
@@ -307,18 +308,18 @@ export default function Menu() {
   const handleTabClick = useCallback((tab) => {
     handleInteraction();
     setActiveTab(tab);
-    
+
     // Enhanced scroll handling
     const element = document.querySelector(`[data-section="${tab}"]`);
     if (element) {
       // Calculate dynamic header offset based on viewport height
       const viewportHeight = window.innerHeight;
       const headerOffset = Math.min(120, viewportHeight * 0.15);
-      
+
       // Get the element's position relative to the viewport
       const elementRect = element.getBoundingClientRect();
       const absoluteElementTop = elementRect.top + window.pageYOffset;
-      
+
       // Calculate the target scroll position
       const targetPosition = absoluteElementTop - headerOffset;
 
@@ -353,7 +354,7 @@ export default function Menu() {
       // Disconnect and reconnect observer with updated rootMargin
       if (observerRef.current) {
         observerRef.current.disconnect();
-        
+
         observerRef.current = new IntersectionObserver(
           (entries) => {
             const visibleEntries = entries
@@ -392,7 +393,7 @@ export default function Menu() {
   }, []);
 
   const renderMenuItems = (category) => (
-    <div 
+    <div
       data-section={category}
       className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4
         ${category === 'Most Requested' ? 'bg-gray-800 p-4 sm:p-6 rounded-xl border-2 border-gray-700' : ''}`}
@@ -444,43 +445,45 @@ export default function Menu() {
   );
 
   return (
-    <div className="space-y-6 pb-24 sm:pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-gray-800 text-gray-200" style={{ backgroundImage: 'url(/path/to/texture.png)', backgroundBlendMode: 'multiply' }}>
-      {/* Welcome Banner */}
-      <div className="bg-gray-700 p-4 sm:p-6 rounded-lg border border-gray-600 shadow-sm">
-        <div className="flex justify-between items-start">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-100 mb-1 sm:mb-2">Casa da Levada</h1>
-            <p className="text-sm sm:text-base text-gray-300">Restaurante & Bar Tradicional da Madeira</p>
-          </div>
-          <div className="flex items-center gap-2">
-            {needsAssistance && (
-              <div className="bg-blue-50 py-1 px-3 rounded-full flex items-center gap-2">
-                <span className="animate-pulse">
-                  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                  </svg>
-                </span>
-                <span className="text-sm text-blue-700">
-                  {assistanceReason === 'no_interaction' ? 'Server Notified' : 'Assistance Requested'}
-                </span>
-              </div>
-            )}
-            <button
-              onClick={() => toggleAssistance()}
-              className={`rounded-full p-2 transition-colors ${
-                needsAssistance
-                  ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-                  : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-              }`}
-              title="Request Assistance"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-              </svg>
-            </button>
+    <>
+      <Navigation />
+      <div className="space-y-6 pb-24 sm:pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 bg-gray-800 text-gray-200" style={{ backgroundImage: 'url(/path/to/texture.png)', backgroundBlendMode: 'multiply' }}>
+        {/* Welcome Banner */}
+        <div className="bg-gray-700 p-4 sm:p-6 rounded-lg border border-gray-600 shadow-sm">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-100 mb-1 sm:mb-2">Casa da Levada</h1>
+              <p className="text-sm sm:text-base text-gray-300">Restaurante & Bar Tradicional da Madeira</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {needsAssistance && (
+                <div className="bg-blue-50 py-1 px-3 rounded-full flex items-center gap-2">
+                  <span className="animate-pulse">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+                  </span>
+                  <span className="text-sm text-blue-700">
+                    {assistanceReason === 'no_interaction' ? 'Server Notified' : 'Assistance Requested'}
+                  </span>
+                </div>
+              )}
+              <button
+                onClick={() => toggleAssistance()}
+                className={`rounded-full p-2 transition-colors ${
+                  needsAssistance
+                    ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                    : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                }`}
+                title="Request Assistance"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Tabs Navigation */}
       <div className="border-b border-gray-600 sticky top-0 bg-gray-800 z-10">
@@ -563,6 +566,7 @@ export default function Menu() {
         showPaymentModal={showPaymentModal}
         setShowPaymentModal={setShowPaymentModal}
       />
-    </div>
+      </div>
+    </>
   );
-} 
+}

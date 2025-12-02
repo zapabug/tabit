@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import websocketService from '../services/websocketService';
+import lightningService from '../services/lightningService';
 
 const TableSessionContext = createContext(null);
 
@@ -22,28 +24,38 @@ export function TableSessionProvider({ children }) {
   const [assistanceReason, setAssistanceReason] = useState('');
   const [selectedItems, setSelectedItems] = useState([]);
 
-  // Function to simulate sending notification to server's device
+  // Function to send notification to server's device via WebSocket
   const notifyServer = useCallback((tableId, reason = 'no_interaction') => {
-    // In a real implementation, this would send a push notification or use WebSocket
     console.log(`Table ${tableId} needs assistance - Reason: ${reason}`);
-    // You would implement actual server notification here
-    // For example: 
-    // await fetch('/api/notify-server', { 
-    //   method: 'POST', 
-    //   body: JSON.stringify({ tableId, reason })
-    // });
+
+    // Try WebSocket first, fallback to console if not available
+    if (websocketService.isConnected()) {
+      websocketService.notifyServer(tableId, reason);
+    } else {
+      // Fallback for when WebSocket is not connected
+      console.log('WebSocket not connected, using fallback notification');
+      // In production, you might want to implement HTTP fallback here
+    }
+
+    // Also update local state immediately for responsiveness
+    setNeedsAssistance(true);
+    setAssistanceReason(reason);
   }, []);
 
   // Function to toggle assistance request
   const toggleAssistance = useCallback(() => {
+    const tableId = window.location.pathname.split('/').pop();
+
     setNeedsAssistance(prev => {
       const newState = !prev;
       if (newState) {
-        const tableId = window.location.pathname.split('/').pop();
         notifyServer(tableId, 'customer_request');
         setAssistanceReason('customer_request');
       } else {
         setAssistanceReason('');
+        if (websocketService.isConnected()) {
+          websocketService.clearAssistance(tableId);
+        }
       }
       return newState;
     });
@@ -65,7 +77,7 @@ export function TableSessionProvider({ children }) {
   useEffect(() => {
     if (sessionActive && !hasOrder) {
       const events = ['mousedown', 'keydown', 'touchstart', 'scroll'];
-      
+
       const handleUserInteraction = () => {
         handleInteraction();
       };
@@ -81,6 +93,47 @@ export function TableSessionProvider({ children }) {
       };
     }
   }, [sessionActive, hasOrder, handleInteraction]);
+
+  // Effect to initialize WebSocket connection
+  useEffect(() => {
+    // Try to connect to WebSocket when session becomes active
+    if (sessionActive && !websocketService.isConnected()) {
+      websocketService.connect()
+        .catch(error => {
+          console.log('WebSocket connection failed, running in offline mode:', error);
+        });
+    }
+
+    // Set up WebSocket event listeners
+    const handleWebSocketMessage = (data) => {
+      switch (data.type) {
+        case 'assistance_cleared':
+          if (data.tableId === window.location.pathname.split('/').pop()) {
+            setNeedsAssistance(false);
+            setAssistanceReason('');
+          }
+          break;
+        case 'table_status_update':
+          // Handle table status updates from staff dashboard
+          if (data.tableId === window.location.pathname.split('/').pop() && data.status === 'cleared') {
+            clearSession();
+          }
+          break;
+        default:
+          break;
+      }
+    };
+
+    websocketService.on('message', handleWebSocketMessage);
+    websocketService.on('assistance_cleared', handleWebSocketMessage);
+    websocketService.on('table_status_update', handleWebSocketMessage);
+
+    return () => {
+      websocketService.off('message', handleWebSocketMessage);
+      websocketService.off('assistance_cleared', handleWebSocketMessage);
+      websocketService.off('table_status_update', handleWebSocketMessage);
+    };
+  }, [sessionActive, clearSession]);
 
   // Effect to handle the timer and server notifications
   useEffect(() => {
@@ -98,7 +151,7 @@ export function TableSessionProvider({ children }) {
           const tableId = window.location.pathname.split('/').pop();
           notifyServer(tableId, 'no_interaction');
         }
-        
+
         setTimer((prevTimer) => {
           if (prevTimer <= 1) {
             return 60; // Reset timer instead of clearing session
@@ -119,6 +172,7 @@ export function TableSessionProvider({ children }) {
 
   const addOrder = async (items, paymentMethod) => {
     console.log('Adding order:', { items, paymentMethod });
+    const tableId = window.location.pathname.split('/').pop();
     const newOrder = {
       id: Date.now(),
       items,
@@ -127,6 +181,11 @@ export function TableSessionProvider({ children }) {
       status: paymentMethod === 'lightning' ? 'pending' : 'awaiting_payment'
     };
 
+    // Send order to staff dashboard via WebSocket
+    if (websocketService.isConnected()) {
+      websocketService.submitOrder(tableId, newOrder);
+    }
+
     if (paymentMethod === 'lightning') {
       try {
         // Generate invoice first
@@ -134,18 +193,26 @@ export function TableSessionProvider({ children }) {
         console.log('Generated invoice:', invoice);
         setLightningInvoice(invoice);
         setPaymentProcessing(true);
-        
-        // Wait for simulated payment (in real app, this would wait for webhook/socket)
-        await new Promise(resolve => setTimeout(resolve, 5000)); // Show QR for 5 seconds
-        
-        const paymentSuccess = await processLightningPayment();
+
+        // Wait for payment confirmation
+        const paymentSuccess = await processLightningPayment(invoice.checkingId);
         console.log('Payment success:', paymentSuccess);
-        
+
         if (paymentSuccess) {
           newOrder.status = 'paid';
           setOrders(prevOrders => [...prevOrders, newOrder]);
           setHasOrder(true);
           setTimer(3600);
+
+          // Send payment update via WebSocket
+          if (websocketService.isConnected()) {
+            websocketService.paymentUpdate(tableId, {
+              orderId: newOrder.id,
+              status: 'paid',
+              method: 'lightning'
+            });
+          }
+
           return true;
         } else {
           throw new Error('Payment failed');
@@ -163,28 +230,99 @@ export function TableSessionProvider({ children }) {
       setOrders(prevOrders => [...prevOrders, newOrder]);
       setHasOrder(true);
       setTimer(3600);
+
+      // Send payment update via WebSocket
+      if (websocketService.isConnected()) {
+        websocketService.paymentUpdate(tableId, {
+          orderId: newOrder.id,
+          status: 'awaiting_payment',
+          method: 'later'
+        });
+      }
+
       return true;
     }
   };
 
   const generateLightningInvoice = async (items) => {
     console.log('Generating Lightning invoice for items:', items);
-    // Simulate Lightning invoice generation
-    const invoice = {
-      paymentRequest: 'lnbc1500n1ps9h4ppd96hsv4425y0cdgw3hk...',
-      amount: items.reduce((total, item) => total + (item.price * item.quantity), 0),
-      expiry: 600, // 10 minutes
-    };
-    console.log('Generated invoice:', invoice);
-    return invoice;
+
+    try {
+      const totalAmount = items.reduce((total, item) => total + (item.price * item.quantity), 0);
+      const itemsString = items.map(item => `${item.quantity}x ${item.name}`).join(', ');
+      const memo = `Tip Tab: ${itemsString}`;
+
+      const metadata = {
+        items,
+        tableId: window.location.pathname.split('/').pop(),
+        timestamp: new Date().toISOString(),
+      };
+
+      const invoice = await lightningService.generateInvoice(totalAmount, memo, metadata);
+      console.log('Generated invoice:', invoice);
+      return invoice;
+    } catch (error) {
+      console.error('Error generating Lightning invoice:', error);
+
+      // Fallback to simulation for development
+      console.log('Falling back to simulated invoice');
+      const totalAmount = items.reduce((total, item) => total + (item.price * item.quantity), 0);
+      return {
+        paymentRequest: 'lnbc1500n1ps9h4ppd96hsv4425y0cdgw3hk...',
+        amount: totalAmount,
+        expiry: 600,
+        memo: 'Tip Tab Order (Simulated)',
+      };
+    }
   };
 
-  const processLightningPayment = async () => {
+  const processLightningPayment = async (checkingId) => {
     console.log('Processing Lightning payment');
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log('Payment processed successfully');
-    return true; // Payment successful
+
+    try {
+      if (checkingId && lightningService.invoiceReadKey) {
+        // Check real payment status with LNBits
+        let attempts = 0;
+        const maxAttempts = 20; // Check for up to 2 minutes
+
+        while (attempts < maxAttempts) {
+          const status = await lightningService.checkPaymentStatus(checkingId);
+
+          if (status.paid) {
+            console.log('Lightning payment confirmed:', status);
+
+            // Handle payment webhook processing
+            await lightningService.handlePaymentWebhook({
+              checking_id: checkingId,
+              payment_hash: status.paymentHash,
+              amount: status.amount * 100, // Convert to millisatoshis
+              memo: status.memo,
+              pending: false,
+            });
+
+            return true;
+          }
+
+          // Wait 3 seconds before checking again
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          attempts++;
+        }
+
+        throw new Error('Payment timeout - not confirmed within 2 minutes');
+      } else {
+        // Fallback to simulation for development
+        console.log('Using payment simulation');
+        const result = await lightningService.simulatePayment({
+          paymentRequest: 'simulated',
+          amount: 0,
+        }, 2000);
+
+        return result.success;
+      }
+    } catch (error) {
+      console.error('Error processing Lightning payment:', error);
+      throw error;
+    }
   };
 
   const clearSession = useCallback(() => {
@@ -199,7 +337,7 @@ export function TableSessionProvider({ children }) {
     handleInteraction();
     const existingItem = selectedItems.find(i => i.id === item.id);
     if (existingItem) {
-      setSelectedItems(prev => prev.map(i => 
+      setSelectedItems(prev => prev.map(i =>
         i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
       ));
     } else {
@@ -209,8 +347,8 @@ export function TableSessionProvider({ children }) {
 
   const removeFromOrder = useCallback((itemId) => {
     handleInteraction();
-    setSelectedItems(prev => prev.map(item => 
-      item.id === itemId && item.quantity > 1 
+    setSelectedItems(prev => prev.map(item =>
+      item.id === itemId && item.quantity > 1
         ? { ...item, quantity: item.quantity - 1 }
         : item
     ).filter(item => item.quantity > 0));
@@ -245,4 +383,4 @@ export function TableSessionProvider({ children }) {
       {children}
     </TableSessionContext.Provider>
   );
-} 
+}

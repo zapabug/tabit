@@ -2,16 +2,17 @@ import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTableSession } from '../context/TableSessionContext';
 import Menu from '../components/Menu';
+import Navigation from '../components/Navigation';
 
 export default function TableView() {
   const { tableId } = useParams();
-  const { 
-    sessionActive, 
-    timer, 
+  const {
+    sessionActive,
+    timer,
     hasOrder,
     orders,
-    startSession, 
-    clearSession 
+    startSession,
+    clearSession
   } = useTableSession();
 
   useEffect(() => {
@@ -31,8 +32,10 @@ export default function TableView() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 pb-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <>
+      <Navigation />
+      <div className="min-h-screen bg-gray-100 pb-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white shadow-sm rounded-lg p-6">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-900">Table {tableId}</h1>
@@ -91,5 +94,6 @@ export default function TableView() {
         </div>
       </div>
     </div>
+    </>
   );
-} 
+}
