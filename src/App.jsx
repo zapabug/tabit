@@ -3,6 +3,7 @@ import { TableSessionProvider } from './context/TableSessionContext';
 import TableView from './pages/TableView';
 import Menu from './components/Menu';
 import StaffDashboard from './pages/StaffDashboard';
+import QRCodeGenerator from './components/QRCodeGenerator';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
           <Route path="/" element={<Menu />} />
           <Route path="/table/:tableId" element={<TableView />} />
           <Route path="/staff" element={<StaffDashboard />} />
+          <Route path="/qr-generator" element={<QRCodeGenerator />} />
         </Routes>
       </TableSessionProvider>
     </Router>
