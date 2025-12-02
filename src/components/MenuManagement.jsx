@@ -3,6 +3,15 @@ import nostrService from '../services/nostrService';
 import CreateManageTables from './CreateManageTables';
 import TableQRGenerator from './TableQRGenerator';
 
+// Fix import issue by creating a wrapper component
+function CreateManageTablesWrapper() {
+  return <CreateManageTables />;
+}
+
+function TableQRGeneratorWrapper() {
+  return <TableQRGenerator />;
+}
+
 export default function MenuManagement() {
   const [restaurantKey, setRestaurantKey] = useState('');
   const [restaurantName, setRestaurantName] = useState('');
@@ -250,7 +259,7 @@ VITE_ZAPSPLITS_ENABLED=true`}
           Create tables, manage their details, and generate QR codes. Each table needs a unique identifier and QR code for customer access.
         </p>
 
-        <CreateManageTables />
+        <CreateManageTablesWrapper />
       </div>
 
       {/* QR Code Generation */}
@@ -260,7 +269,7 @@ VITE_ZAPSPLITS_ENABLED=true`}
           Generate QR codes for each table in your restaurant. Each table gets a unique QR code.
         </p>
 
-        <TableQRGenerator />
+        <TableQRGeneratorWrapper />
       </div>
     </div>
   );
