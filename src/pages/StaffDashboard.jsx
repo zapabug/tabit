@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import websocketService from '../services/websocketService';
 import Navigation from '../components/Navigation';
+import MenuManagement from '../components/MenuManagement';
 
 // Mock data for demonstration - in real app, this would come from WebSocket/API
 const mockTableSessions = [
@@ -54,6 +55,7 @@ export default function StaffDashboard() {
   const [selectedTable, setSelectedTable] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [activeTab, setActiveTab] = useState('tables');
   const navigate = useNavigate();
 
   // Initialize WebSocket connection and set up listeners
@@ -267,10 +269,10 @@ export default function StaffDashboard() {
         {/* Header */}
         <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 space-y-4 sm:space-y-0">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Staff Dashboard</h1>
-              <p className="text-sm text-gray-600">Casa da Levada Restaurant</p>
+              <p className="text-sm text-gray-600">Tab-IT Restaurant Management</p>
             </div>
             <div className="flex items-center space-x-4">
               <label className="flex items-center">
@@ -290,32 +292,61 @@ export default function StaffDashboard() {
               </button>
             </div>
           </div>
+
+          {/* Tabs */}
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab('tables')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'tables'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Tables
+              </button>
+              <button
+                onClick={() => setActiveTab('menu')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'menu'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Menu Management
+              </button>
+            </nav>
+          </div>
         </div>
       </div>
 
-      {/* Notifications */}
-      {notifications.length > 0 && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-          <div className="space-y-2">
-            {notifications.map(notification => (
-              <div key={notification.id} className="bg-yellow-50 border border-yellow-200 rounded-md p-3 flex items-center justify-between">
-                <div className="flex items-center">
-                  <svg className="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                  </svg>
-                  <span className="text-yellow-800">{notification.message}</span>
-                </div>
-                <span className="text-xs text-yellow-600">
-                  {notification.timestamp.toLocaleTimeString()}
-                </span>
+      {/* Tables Tab Content */}
+      {activeTab === 'tables' && (
+        <>
+          {/* Notifications */}
+          {notifications.length > 0 && (
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+              <div className="space-y-2">
+                {notifications.map(notification => (
+                  <div key={notification.id} className="bg-yellow-50 border border-yellow-200 rounded-md p-3 flex items-center justify-between">
+                    <div className="flex items-center">
+                      <svg className="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                      </svg>
+                      <span className="text-yellow-800">{notification.message}</span>
+                    </div>
+                    <span className="text-xs text-yellow-600">
+                      {notification.timestamp.toLocaleTimeString()}
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
-      )}
+            </div>
+          )}
 
-      {/* Tables Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          {/* Tables Grid */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Table Status</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {tableSessions.map(table => (
@@ -423,6 +454,11 @@ export default function StaffDashboard() {
           </div>
         </div>
       )}
+        </>
+      )}
+
+      {/* Menu Management Tab Content */}
+      {activeTab === 'menu' && <MenuManagement />}
       </div>
     </>
   );

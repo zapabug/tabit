@@ -1,7 +1,21 @@
-# Tip Tab - Streamlined Table Service
+# Tab-IT - Streamlined Table Service
 
 ## Overview
-Tip Tab is a web-based solution designed to optimize restaurant service by allowing customers to open a tab, order directly from their table, and pay seamlessly. It integrates QR/NFC-based table interaction, real-time order notifications for staff, and optional Lightning payments while ensuring restaurants can continue using their existing POS systems.
+Tab-IT is a web-based solution designed to optimize restaurant service by allowing customers to open a tab, order directly from their table, and pay seamlessly. It integrates QR/NFC-based table interaction, real-time order notifications for staff, and optional Lightning payments while ensuring restaurants can continue using their existing POS systems.
+
+## 🌑 Nostr Integration
+
+Each Tab-IT restaurant generates its own Nostr keypair for:
+- **Receiving table orders** via Nostr events (kind 30000)
+- **Processing Lightning payments** through unique order IDs
+- **Real-time synchronization** across multiple devices
+- **Decentralized order management** without server dependency
+
+### Nostr Key Management
+- **Private Key (nsec)**: Securely stored for receiving orders
+- **Public Key (npub)**: Shared with customers for restaurant discovery
+- **Event Types**: Orders (30000), Assistance (30001), Payments (30002)
+- **Restaurant Isolation**: Each restaurant only listens to its own QR-generated table events
 
 ## Features
 ### 1. QR/NFC Table Interaction

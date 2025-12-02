@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import websocketService from '../services/websocketService';
 import lightningService from '../services/lightningService';
+import nostrService from '../services/nostrService';
 
 const TableSessionContext = createContext(null);
 
@@ -213,12 +214,21 @@ export function TableSessionProvider({ children }) {
       items,
       timestamp: new Date().toISOString(),
       paymentMethod,
-      status: paymentMethod === 'lightning' ? 'pending' : 'awaiting_payment'
+      status: paymentMethod === 'lightning' ? 'pending' : 'awaiting_payment',
+      total: items.reduce((total, item) => total + (item.price * item.quantity), 0)
     };
 
     // Send order to staff dashboard via WebSocket
     if (websocketService.isConnected()) {
       websocketService.submitOrder(tableId, newOrder);
+    }
+
+    // Publish order event to Nostr
+    try {
+      await nostrService.createTableOrderEvent(tableId, newOrder);
+      console.log('Order published to Nostr');
+    } catch (error) {
+      console.error('Failed to publish order to Nostr:', error);
     }
 
     if (paymentMethod === 'lightning') {
@@ -246,6 +256,25 @@ export function TableSessionProvider({ children }) {
               status: 'paid',
               method: 'lightning'
             });
+          }
+
+          // Publish payment event to Nostr
+          try {
+            const paymentData = {
+              orderId: newOrder.id,
+              status: 'confirmed',
+              method: 'lightning',
+              amount: invoice.amount,
+              currency: 'EUR',
+              transactionId: invoice.paymentHash,
+              timestamp: new Date().toISOString(),
+              lightningInvoice: invoice.paymentRequest
+            };
+
+            await nostrService.createPaymentEvent(newOrder.id, paymentData);
+            console.log('Payment published to Nostr');
+          } catch (error) {
+            console.error('Failed to publish payment to Nostr:', error);
           }
 
           return true;

@@ -19,7 +19,7 @@ export default function Navigation() {
           {/* Logo/Brand */}
           <div className="flex items-center">
             <Link to="/" className="text-xl font-bold text-gray-900">
-              🍽️ Tip Tab
+              🍽️ Tab-IT
             </Link>
           </div>
 
@@ -45,16 +45,7 @@ export default function Navigation() {
             >
               Staff Dashboard
             </Link>
-            <Link
-              to="/qr-generator"
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                isActivePath('/qr-generator')
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-            >
-              QR Generator
-            </Link>
+
           </div>
 
           {/* Mobile menu button */}
@@ -103,17 +94,7 @@ export default function Navigation() {
               >
                 Staff Dashboard
               </Link>
-            <Link
-              to="/qr-generator"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`block px-3 py-2 rounded-md text-base font-medium transition-colors ${
-                isActivePath('/qr-generator')
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-              }`}
-            >
-              QR Generator
-            </Link>
+
             </div>
           </div>
         )}

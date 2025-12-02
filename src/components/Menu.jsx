@@ -452,8 +452,8 @@ export default function Menu() {
         <div className="bg-gray-700 p-4 sm:p-6 rounded-lg border border-gray-600 shadow-sm">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-100 mb-1 sm:mb-2">Casa da Levada</h1>
-              <p className="text-sm sm:text-base text-gray-300">Restaurante & Bar Tradicional da Madeira</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-100 mb-1 sm:mb-2">Tab-IT</h1>
+              <p className="text-sm sm:text-base text-gray-300">Modern Table Service Solution</p>
             </div>
             <div className="flex items-center gap-2">
               {needsAssistance && (

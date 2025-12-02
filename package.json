@@ -2,7 +2,7 @@
   "name": "tabit",
   "private": true,
   "version": "1.0.0",
-  "description": "## Overview Tip Tab is a web-based solution designed to optimize restaurant service by allowing customers to open a tab, order directly from their table, and pay seamlessly. It integrates QR/NFC-based table interaction, real-time order notifications for staff, and optional Lightning payments while ensuring restaurants can continue using their existing POS systems.",
+  "description": "## Overview Tab-IT is a web-based solution designed to optimize restaurant service by allowing customers to open a tab, order directly from their table, and pay seamlessly. It integrates QR/NFC-based table interaction, real-time order notifications for staff, and optional Lightning payments while ensuring restaurants can continue using their existing POS systems.",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -29,6 +29,7 @@
   "dependencies": {
     "@headlessui/react": "^1.7.17",
     "@heroicons/react": "^2.0.18",
+    "nostr-tools": "^2.7.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.20.0",
