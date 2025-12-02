@@ -24,6 +24,16 @@ export function TableSessionProvider({ children }) {
   const [assistanceReason, setAssistanceReason] = useState('');
   const [selectedItems, setSelectedItems] = useState([]);
 
+  // Function definitions that need to be available before useEffect hooks
+
+  const clearSession = useCallback(() => {
+    setSessionActive(false);
+    setOrders([]);
+    setHasOrder(false);
+    setTimer(60);
+    setLastInteractionTime(Date.now());
+  }, []);
+
   // Function to send notification to server's device via WebSocket
   const notifyServer = useCallback((tableId, reason = 'no_interaction') => {
     console.log(`Table ${tableId} needs assistance - Reason: ${reason}`);
@@ -42,7 +52,6 @@ export function TableSessionProvider({ children }) {
     setAssistanceReason(reason);
   }, []);
 
-  // Function to toggle assistance request
   const toggleAssistance = useCallback(() => {
     const tableId = window.location.pathname.split('/').pop();
 
@@ -61,7 +70,6 @@ export function TableSessionProvider({ children }) {
     });
   }, [notifyServer]);
 
-  // Function to handle user interaction
   const handleInteraction = useCallback(() => {
     setLastInteractionTime(Date.now());
     if (!hasOrder && sessionActive) {
@@ -72,6 +80,33 @@ export function TableSessionProvider({ children }) {
       }
     }
   }, [hasOrder, sessionActive, assistanceReason]);
+
+
+
+  const addToOrder = useCallback((item) => {
+    handleInteraction();
+    const existingItem = selectedItems.find(i => i.id === item.id);
+    if (existingItem) {
+      setSelectedItems(prev => prev.map(i =>
+        i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
+      ));
+    } else {
+      setSelectedItems(prev => [...prev, { ...item, quantity: 1 }]);
+    }
+  }, [selectedItems, handleInteraction]);
+
+  const removeFromOrder = useCallback((itemId) => {
+    handleInteraction();
+    setSelectedItems(prev => prev.map(item =>
+      item.id === itemId && item.quantity > 1
+        ? { ...item, quantity: item.quantity - 1 }
+        : item
+    ).filter(item => item.quantity > 0));
+  }, [handleInteraction]);
+
+  const clearSelectedItems = useCallback(() => {
+    setSelectedItems([]);
+  }, []);
 
   // Effect to set up interaction listeners
   useEffect(() => {
@@ -325,38 +360,7 @@ export function TableSessionProvider({ children }) {
     }
   };
 
-  const clearSession = useCallback(() => {
-    setSessionActive(false);
-    setOrders([]);
-    setHasOrder(false);
-    setTimer(60);
-    setLastInteractionTime(Date.now());
-  }, []);
 
-  const addToOrder = useCallback((item) => {
-    handleInteraction();
-    const existingItem = selectedItems.find(i => i.id === item.id);
-    if (existingItem) {
-      setSelectedItems(prev => prev.map(i =>
-        i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-      ));
-    } else {
-      setSelectedItems(prev => [...prev, { ...item, quantity: 1 }]);
-    }
-  }, [selectedItems, handleInteraction]);
-
-  const removeFromOrder = useCallback((itemId) => {
-    handleInteraction();
-    setSelectedItems(prev => prev.map(item =>
-      item.id === itemId && item.quantity > 1
-        ? { ...item, quantity: item.quantity - 1 }
-        : item
-    ).filter(item => item.quantity > 0));
-  }, [handleInteraction]);
-
-  const clearSelectedItems = useCallback(() => {
-    setSelectedItems([]);
-  }, []);
 
   const value = {
     sessionActive,

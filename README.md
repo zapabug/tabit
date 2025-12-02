@@ -25,18 +25,63 @@ Tip Tab is a web-based solution designed to optimize restaurant service by allow
 ### 5. Optional Social Media Integration
 - If Lightning is used for payment, an optional **Nostr social post** can be triggered (anonymous unless the customer opts in).
 
-set up LNBits instance
-enable lnbits plugins:
-    zapsplits (auto tips)
-    Cashu extension (for staff wallets)
-Configure webhooks auto spend zaps to satff npubs
+### 6. Staff Dashboard
+- **Real-time Table Management**: View all table statuses at a glance
+- **Live Notifications**: Receive instant alerts for new orders and assistance requests
+- **Order Tracking**: Monitor order status and payment confirmations
+- **Table Control**: Clear tables, mark assistance complete, manage sessions
+- **WebSocket Integration**: Real-time updates without page refresh
+
+### 7. Lightning Payment Integration
+- **LNBits Integration**: Full Lightning Network support via LNBits
+- **Real-time Payment Processing**: Instant payment confirmation and QR code generation
+- **ZapSplits Support**: Automatic tip distribution to staff (configurable)
+- **Payment Status Tracking**: Complete payment lifecycle monitoring
+- **Fallback Support**: Development mode with simulated payments
+
+## Quick Start
+
+### For Development
+1. Clone and install: `npm install`
+2. Copy environment: `cp .env.example .env`
+3. Configure your LNBits settings in `.env`
+4. Start WebSocket server: `node server.js` (optional for testing)
+5. Run app: `npm run dev`
+
+### For Customers
+1. Scan QR code or visit `/table/{tableId}`
+2. Browse the menu and select items
+3. Choose payment method (Lightning or Pay Later)
+4. For Lightning: Scan QR code with your wallet
+
+### For Staff
+1. Visit `/staff` to access the dashboard
+2. Monitor real-time table status
+3. Receive notifications for orders and assistance
+4. Manage table sessions and payments
+
+## Configuration
+
+### LNBits Setup
+```bash
+# Install LNBits plugins:
+- zapsplits (auto tips)
+- Cashu extension (for staff wallets)
+- Webhooks (payment notifications)
+```
+
+Configure webhooks to auto-send zaps to staff npubs when payments are complete.
 
 ## Roadmap
-- [✔️] Implement QR/NFC scanning 
-- [ ] Develop a basic ordering system
-- [ ] Integrate WebSockets for live notifications
-- [ ] Implement Lightning payment processing
-- [ ] Add admin/staff dashboard
+- [✔️] Implement QR/NFC scanning
+- [✔️] Develop a basic ordering system
+- [✔️] Integrate WebSockets for live notifications
+- [✔️] Implement Lightning payment processing
+- [✔️] Add admin/staff dashboard
+- [ ] Implement LNBits ZapSplits integration
+- [ ] Add Nostr social posting integration
+- [ ] Multi-restaurant support
+- [ ] Advanced analytics and reporting
 
 ## Contributing
 We welcome contributions! Feel free to open issues or submit pull requests.

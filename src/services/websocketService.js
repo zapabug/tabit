@@ -9,7 +9,7 @@ class WebSocketService {
     this.isConnecting = false;
   }
 
-  connect(url = 'ws://localhost:8080') {
+  connect(url = import.meta.env.VITE_WEBSOCKET_URL || 'ws://localhost:8080') {
     if (this.isConnecting || (this.ws && this.ws.readyState === WebSocket.OPEN)) {
       return Promise.resolve();
     }
@@ -65,7 +65,7 @@ class WebSocketService {
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
       console.log(`Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
-      
+
       setTimeout(() => {
         this.connect();
       }, this.reconnectInterval);

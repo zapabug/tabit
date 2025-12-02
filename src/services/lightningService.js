@@ -1,9 +1,9 @@
 class LightningService {
   constructor() {
-    this.lnbitsUrl = process.env.REACT_APP_LNBITS_URL || 'https://lnbits.com';
-    this.adminKey = process.env.REACT_APP_LNBITS_ADMIN_KEY || '';
-    this.invoiceReadKey = process.env.REACT_APP_LNBITS_INVOICE_KEY || '';
-    this.zapsplitsEnabled = process.env.REACT_APP_ZAPSPLITS_ENABLED === 'true';
+    this.lnbitsUrl = import.meta.env.VITE_LNBITS_URL || 'https://lnbits.com';
+    this.adminKey = import.meta.env.VITE_LNBITS_ADMIN_KEY || '';
+    this.invoiceReadKey = import.meta.env.VITE_LNBITS_INVOICE_KEY || '';
+    this.zapsplitsEnabled = import.meta.env.VITE_ZAPSPLITS_ENABLED === 'true';
   }
 
   // Generate a Lightning invoice using LNBits API
@@ -29,7 +29,7 @@ class LightningService {
       }
 
       const data = await response.json();
-      
+
       return {
         paymentRequest: data.payment_request,
         paymentHash: data.payment_hash,
@@ -58,7 +58,7 @@ class LightningService {
       }
 
       const data = await response.json();
-      
+
       return {
         paid: data.paid,
         amount: data.amount / 100, // Convert back from millisatoshis
@@ -101,7 +101,7 @@ class LightningService {
       }
 
       const data = await response.json();
-      
+
       return {
         paymentHash: data.payment_hash,
         checkingId: data.checking_id,
@@ -134,7 +134,7 @@ class LightningService {
           // In real implementation, this would use ZapSplits API
           // For demo purposes, we'll just log the distribution
           console.log(`Distributing €${tipPerStaff.toFixed(2)} tip to staff member: ${pubkey}`);
-          
+
           results.push({
             pubkey,
             amount: tipPerStaff,
@@ -195,7 +195,7 @@ class LightningService {
       }
 
       const data = await response.json();
-      
+
       return {
         balance: data.balance / 100, // Convert from millisatoshis
         name: data.name,
@@ -210,29 +210,29 @@ class LightningService {
   // Webhook handler for payment confirmations
   async handlePaymentWebhook(paymentData) {
     console.log('Lightning payment webhook received:', paymentData);
-    
+
     // This would typically:
     // 1. Verify the webhook signature
     // 2. Update order status in database
     // 3. Send notifications
     // 4. Process tip distribution if enabled
-    
+
     try {
       const { checking_id, payment_hash, amount, memo, pending } = paymentData;
-      
+
       if (pending) {
         console.log('Payment pending:', checking_id);
         return { status: 'pending' };
       }
-      
+
       console.log(`Payment confirmed: ${amount/100} sats for ${memo}`);
-      
+
       // Here you would typically:
       // - Update order status to 'paid'
       // - Send confirmation to customer
       // - Notify staff
       // - Distribute tips if ZapSplits is enabled
-      
+
       return { status: 'confirmed' };
     } catch (error) {
       console.error('Error handling payment webhook:', error);
@@ -244,10 +244,10 @@ class LightningService {
   simulatePayment(invoice, delay = 3000) {
     return new Promise((resolve) => {
       console.log(`Simulating Lightning payment for €${invoice.amount.toFixed(2)}`);
-      
+
       setTimeout(() => {
         const success = Math.random() > 0.1; // 90% success rate for simulation
-        
+
         if (success) {
           console.log('Lightning payment simulation: SUCCESS');
           resolve({
